@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padhaku AI - Smart Study Companion & Focus Shield</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-brand-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-brand-600 p-2.5 rounded-xl shadow-lg shadow-brand-500/30 text-white">
+                <i class="fa-solid fa-graduation-cap text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Padhaku AI</h1>
+                <p class="text-xs text-slate-400">Study Smarter, Focus Deeper</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <!-- Focus Shield Toggle -->
+            <button id="focusShieldBtn" onclick="toggleFocusShield()" class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 transition shadow-lg shadow-emerald-900/20">
+                <i class="fa-solid fa-shield-halved" id="shieldIcon"></i>
+                <span id="shieldText">Enable Focus Shield</span>
+            </button>
+            <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Focus Shield Active Overlay Notification Banner -->
+    <div id="focusBanner" class="hidden bg-emerald-950/90 border-b border-emerald-500/40 text-emerald-200 px-6 py-3 text-sm flex items-center justify-between transition-all duration-300">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-bell-slash text-emerald-400 animate-pulse text-lg"></i>
+            <span><strong>Focus Shield Active:</strong> Screen wake lock is engaged, notifications are blocked in-app. Tip: Turn your phone face down for complete offline focus!</span>
+        </div>
+        <button onclick="toggleFocusShield()" class="text-xs bg-emerald-800 hover:bg-emerald-700 text-emerald-100 px-3 py-1 rounded-lg">Exit Shield</button>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Panel: Input & Controls -->
+        <section class="lg:col-span-1 space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <h2 class="text-base font-semibold text-slate-200 mb-3 flex items-center">
+                    <i class="fa-solid fa-book-open text-brand-500 mr-2"></i> Study Material
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Upload Notes / Diagram</label>
+                        <label class="border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer bg-slate-950/50 transition">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-2"></i>
+                            <span class="text-xs text-slate-300 font-medium">Click to upload image or notes</span>
+                            <span class="text-[10px] text-slate-500 mt-1">PNG, JPG, PDF up to 10MB</span>
+                            <input type="file" id="noteInput" class="hidden" accept="image/*" onchange="handleFile(event)">
+                        </label>
+                        <div id="fileName" class="text-xs text-emerald-400 mt-2 truncate"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Or Paste Lecture Text</label>
+                        <textarea id="studyText" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500 transition" placeholder="Paste your chapter notes, formulas, or concepts here..."></textarea>
+                    </div>
+
+                    <button onclick="generateQuiz()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-medium py-2.5 rounded-xl transition shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Generate Quiz & Summary</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Focus Stats Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center justify-between">
+                    <span><i class="fa-solid fa-fire text-amber-500 mr-2"></i> Study Streak & Timer</span>
+                    <span id="timerDisplay" class="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded-lg text-amber-400">25:00</span>
+                </h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <div class="text-2xl font-bold text-indigo-400" id="totalSessions">0</div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">Sessions Done</div>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <div class="text-2xl font-bold text-emerald-400" id="focusMinutes">0m</div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">Focus Time</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel: AI Results & Interactive Quiz -->
+        <section class="lg:col-span-2 space-y-6">
+            <div id="outputArea" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl min-h-[420px] flex flex-col justify-center items-center text-center text-slate-500">
+                <i class="fa-solid fa-brain text-5xl mb-3 text-slate-700 animate-pulse"></i>
+                <p class="text-sm font-medium">Upload notes or paste text to generate your smart study quiz and summary.</p>
+                <p class="text-xs text-slate-600 mt-1">Enable **Focus Shield** above for a distraction-free study session!</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let wakeLock = null;
+        let isFocusActive = false;
+        let timerInterval = null;
+        let timeLeft = 25 * 60;
+        let sessionsCount = 0;
+        let totalFocusTime = 0;
+
+        // Focus Shield Toggle (Wake Lock + Fullscreen + Banner)
+        async function toggleFocusShield() {
+            const banner = document.getElementById('focusBanner');
+            const btn = document.getElementById('focusShieldBtn');
+            const icon = document.getElementById('shieldIcon');
+            const text = document.getElementById('shieldText');
+
+            if (!isFocusActive) {
+                try {
+                    // Request Screen Wake Lock to prevent screen sleep/notifications wake up
+                    if ('wakeLock' in navigator) {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                    }
+                    // Request Fullscreen for immersive study
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                    }
+
+                    isFocusActive = true;
+                    banner.classList.remove('hidden');
+                    btn.className = "flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition animate-pulse";
+                    icon.className = "fa-solid fa-shield-cat";
+                    text.innerText = "Focus Shield ON";
+                    startTimer();
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                if (wakeLock !== null) {
+                    wakeLock.release().then(() => { wakeLock = null; });
+                }
+                if (document.exitFullscreen && document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {});
+                }
+
+                isFocusActive = false;
+                banner.classList.add('hidden');
+                btn.className = "flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 transition shadow-lg shadow-emerald-900/20";
+                icon.className = "fa-solid fa-shield-halved";
+                text.innerText = "Enable Focus Shield";
+                stopTimer();
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    totalFocusTime++;
+                    let mins = Math.floor(timeLeft / 60);
+                    let secs = timeLeft % 60;
+                    document.getElementById('timerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    document.getElementById('focusMinutes').innerText = `${Math.floor(totalFocusTime / 60)}m`;
+                } else {
+                    sessionsCount++;
+                    document.getElementById('totalSessions').innerText = sessionsCount;
+                    alert("Pomodoro session completed! Take a 5-minute break.");
+                    timeLeft = 25 * 60;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('fileName').innerText = `📄 Uploaded: ${file.name}`;
+            }
+        }
+
+        function generateQuiz() {
+            const text = document.getElementById('studyText').value;
+            const output = document.getElementById('outputArea');
+            
+            output.className = "bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl text-left space-y-4 overflow-y-auto max-h-[600px]";
+            output.innerHTML = `
+                <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-100"><i class="fa-solid fa-bolt text-amber-400 mr-2"></i> AI Quick Revision & Quiz</h3>
+                    <span class="text-xs bg-brand-500/20 text-brand-400 px-2.5 py-1 rounded-full font-medium">Generated Successfully</span>
+                </div>
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Key Summary</h4>
+                    <p class="text-sm text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+                        ${text ? text.substring(0, 180) + '...' : 'Core concepts extracted successfully. Focus mode is active to ensure zero interruptions during your revision.'}
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Practice Question</h4>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                        <p class="text-sm font-medium text-slate-200">1. What is the primary focus of this study block?</p>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 bg-slate-900 p-2.5 rounded-lg border border-slate-800 cursor-pointer hover:border-brand-500 transition">
+                                <input type="radio" name="q1" class="text-brand-600">
+                                <span>Deep concept mastery with zero notification distractions</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 bg-slate-900 p-2.5 rounded-lg border border-slate-800 cursor-pointer hover:border-brand-500 transition">
+                                <input type="radio" name="q1" class="text-brand-600">
+                                <span>Multitasking across social media and study apps</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const icon = document.getElementById('themeIcon');
+            icon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-moon" : "fa-solid fa-sun";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padhaku AI | Smart Study & Revision Companion</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for sleek academic aesthetic */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.6);
+        }
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 glass-panel border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('create')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-700 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                    <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-lg tracking-tight">Padhaku AI</span>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">Beta</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Smart Notes-to-Quiz Study Companion</p>
+                </div>
+            </div>
+
+            <!-- Center Navigation Tabs -->
+            <nav class="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                <button id="nav-create" onclick="switchView('create')" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Study Lab</span>
+                </button>
+                <button id="nav-quiz" onclick="switchView('quiz')" class="hidden flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                    <span>Active Quiz</span>
+                </button>
+                <button id="nav-history" onclick="switchView('history')" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <i data-lucide="library" class="w-4 h-4"></i>
+                    <span>Revision Vault</span>
+                    <span id="history-badge" class="ml-0.5 text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.2 rounded-full">0</span>
+                </button>
+            </nav>
+
+            <!-- Right Controls (Focus Mode & Theme) -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleZenMode()" id="zen-btn" title="Toggle Distraction-Free Zen Mode" class="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="maximize-2" class="w-5 h-5"></i>
+                </button>
+                <button onclick="toggleDarkMode()" title="Toggle Dark/Light Theme" class="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" id="theme-icon-light" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Custom Toast Notification Banner (Replaces alert()) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+    <!-- Main Application Content -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: STUDY LAB (INPUT & PRESETS)        -->
+        <!-- ========================================== -->
+        <section id="view-create" class="space-y-6">
+            <!-- Hero Header -->
+            <div id="hero-banner" class="bg-gradient-to-r from-brand-600 via-indigo-600 to-violet-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg shadow-brand-500/15 relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-xs font-medium mb-3 backdrop-blur-sm">
+                        <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-300"></i>
+                        <span>Powered by Gemini Vision & Reasoning</span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Turn messy notes & textbook snaps into mastery.</h1>
+                    <p class="text-indigo-100 text-sm sm:text-base leading-relaxed">
+                        Snap a photo of your handwritten lecture notes, diagrams, or paste study material. Padhaku AI extracts key takeaways and crafts a tailored MCQ quiz with explanations.
+                    </p>
+                </div>
+                <!-- Decorative background shapes -->
+                <div class="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+                <div class="absolute right-12 top-6 opacity-15 pointer-events-none hidden md:block">
+                    <i data-lucide="book-open-check" class="w-36 h-36"></i>
+                </div>
+            </div>
+
+            <!-- Quick Try Sample Presets -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="flask-conical" class="w-4 h-4 text-brand-500"></i>
+                        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Instant Study Presets (Test Without Uploading)</h2>
+                    </div>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Click a topic to auto-fill material</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button onclick="loadPreset('os')" class="text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-brand-50/40 dark:hover:bg-brand-900/20 transition-all group">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-brand-600 dark:text-brand-400">Computer Science</span>
+                            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-500 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200">OS Deadlocks & Coffman Conditions</p>
+                    </button>
+
+                    <button onclick="loadPreset('bio')" class="text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-brand-50/40 dark:hover:bg-brand-900/20 transition-all group">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Biology</span>
+                            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Cellular Respiration & ATP Cycle</p>
+                    </button>
+
+                    <button onclick="loadPreset('history')" class="text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-brand-50/40 dark:hover:bg-brand-900/20 transition-all group">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-amber-600 dark:text-amber-400">Modern History</span>
+                            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-500 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Indian Space Program & ISRO Milestones</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Input Grid: Image Upload + Text Notes -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Image Upload Dropzone -->
+                <div class="lg:col-span-5 flex flex-col">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex-1 flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-semibold flex items-center gap-2">
+                                <i data-lucide="image" class="w-4 h-4 text-brand-500"></i>
+                                <span>Upload Study Image</span>
+                            </label>
+                            <button id="clear-image-btn" onclick="clearUploadedImage()" class="hidden text-xs text-rose-500 hover:text-rose-600 font-medium flex items-center gap-1">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Remove
+                            </button>
+                        </div>
+
+                        <!-- Drag and Drop Area -->
+                        <div id="drop-zone" class="relative flex-1 min-h-[240px] border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-brand-500 dark:hover:border-brand-500 rounded-xl transition-all flex flex-col items-center justify-center p-5 text-center cursor-pointer bg-slate-50/60 dark:bg-slate-800/30 group">
+                            <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImageFile(this.files[0])">
+                            
+                            <!-- Default Empty State -->
+                            <div id="drop-zone-empty" class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                                </div>
+                                <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                    Drop your study page here, or <span class="text-brand-600 dark:text-brand-400 underline">browse</span>
+                                </p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+                                    Supports handwritten notes, textbook pages, slides, or diagrams (PNG, JPG, WEBP)
+                                </p>
+                            </div>
+
+                            <!-- Live Image Preview State -->
+                            <div id="drop-zone-preview" class="hidden w-full h-full flex flex-col items-center justify-center">
+                                <div class="relative w-full max-h-56 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-900/5">
+                                    <img id="preview-img" src="" alt="Study Material Preview" class="w-full h-56 object-contain mx-auto">
+                                </div>
+                                <p id="preview-filename" class="mt-2.5 text-xs font-mono text-slate-500 dark:text-slate-400 truncate max-w-full"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Text Notes & Quiz Configuration -->
+                <div class="lg:col-span-7 flex flex-col">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex-1 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <label for="notes-textarea" class="text-sm font-semibold flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-4 h-4 text-brand-500"></i>
+                                    <span>Paste Notes or Add Context</span>
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <span id="char-count" class="text-xs font-mono text-slate-400">0 chars</span>
+                                    <button onclick="clearNotes()" class="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">Clear</button>
+                                </div>
+                            </div>
+                            <textarea id="notes-textarea" rows="7" placeholder="Paste lecture notes, definitions, formulas, or specific instructions (e.g., 'Focus on numerical formulas from this image')..." class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/40 p-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none"></textarea>
+                        </div>
+
+                        <!-- Generation Settings & Action Button -->
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <!-- Question Count Selector -->
+                                <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
+                                    <i data-lucide="list-ordered" class="w-4 h-4 text-slate-500"></i>
+                                    <label for="num-questions" class="text-xs font-medium text-slate-600 dark:text-slate-300">Questions:</label>
+                                    <select id="num-questions" class="bg-transparent text-xs font-bold text-brand-600 dark:text-brand-400 focus:outline-none cursor-pointer">
+                                        <option value="3">3 MCQs</option>
+                                        <option value="5" selected>5 MCQs</option>
+                                        <option value="8">8 MCQs</option>
+                                    </select>
+                                </div>
+
+                                <!-- Difficulty Selector -->
+                                <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
+                                    <i data-lucide="gauge" class="w-4 h-4 text-slate-500"></i>
+                                    <label for="difficulty-level" class="text-xs font-medium text-slate-600 dark:text-slate-300">Level:</label>
+                                    <select id="difficulty-level" class="bg-transparent text-xs font-bold text-brand-600 dark:text-brand-400 focus:outline-none cursor-pointer">
+                                        <option value="Foundational">Foundational</option>
+                                        <option value="Exam-Ready" selected>Exam-Ready</option>
+                                        <option value="Hardcore">Hardcore</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Generate Button -->
+                            <button id="generate-btn" onclick="generateStudyQuiz()" class="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-semibold text-sm shadow-md shadow-brand-600/25 flex items-center justify-center gap-2 transition-all">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                <span>Generate Study Quiz</span>
+                            </button>
+                        </div>
